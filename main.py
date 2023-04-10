@@ -14,9 +14,14 @@ while True:
     white_lower = np.array([0, 0, 0], np.uint8)
     white_upper = np.array([0, 0, 255], np.uint8)
 
+    gray_lower = np.array([0, 0, 0], np.uint8)
+    gray_upper = np.array([255, 10, 255], np.uint8)
+
     red_mask = cv2.inRange(hsvFrame, red_lower, red_upper)
 
     white_mask = cv2.inRange(hsvFrame, white_lower, white_upper)
+
+    gray_mask = cv2.inRange(hsvFrame, gray_lower, gray_upper)
 
     kernel = np.ones((5,5), "uint8")
 
@@ -25,6 +30,9 @@ while True:
 
     white_mask = cv2.dilate(white_mask, kernel)
     res_white = cv2.bitwise_and(frame, frame, mask=white_mask)
+
+    gray_mask = cv2.dilate(gray_mask, kernel)
+    res_gray = cv2.bitwise_and(frame, frame, mask=gray_mask)
 
     contours, hierarchy = cv2.findContours(red_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
 
@@ -43,6 +51,15 @@ while True:
             x, y, w, h = cv2.boundingRect(contour)
             frame = cv2.rectangle(frame, (x, y), (x+w, y+h), (255,0,0), 2)
             cv2.putText(frame, "White", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,0,0), 2)
+
+    contours, hierarchy = cv2.findContours(gray_mask, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+
+    for pic, contour in enumerate(contours) :
+        area = cv2.contourArea(contour)
+        if (area > 300) :
+            x, y, w, h = cv2.boundingRect(contour)
+            frame = cv2.rectangle(frame, (x, y), (x+w, y+h), (255,10,255), 2)
+            cv2.putText(frame, "Gray", (x, y), cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255,10,255), 2)
 
     cv2.imshow("detectionRed",frame)
 
